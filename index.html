@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comprehensive Biology & Conservation Quiz (200 Questions)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+  <style>
+    body { background-color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+  </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">BioMastery 200</span>
+        <span class="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded border border-slate-700">Full Course Exam</span>
+      </div>
+      <div class="flex items-center space-x-6 text-sm">
+        <div>Score: <span id="score-display" class="font-bold text-emerald-400">0</span> / <span id="answered-display">0</span></div>
+        <div>Progress: <span id="progress-text" class="font-bold text-cyan-400">0%</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto px-4 py-6 flex-1 flex flex-col md:flex-row gap-6 w-full">
+
+    <!-- Navigation / Module Panel Sidebar -->
+    <aside class="w-full md:w-80 bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col h-auto md:h-[calc(100vh-6rem)] md:sticky md:top-20">
+      <h2 class="text-lg font-bold text-slate-900 mb-3">Modules & Questions</h2>
+      
+      <!-- Module Selectors -->
+      <div class="space-y-1.5 mb-3 text-xs">
+        <button onclick="filterModule('all')" id="mod-btn-all" class="mod-filter-btn w-full text-left px-3 py-2 rounded-lg font-semibold bg-slate-900 text-white">All Modules (200)</button>
+        <button onclick="filterModule(1)" id="mod-btn-1" class="mod-filter-btn w-full text-left px-3 py-2 rounded-lg font-medium hover:bg-slate-100 text-slate-700">1. Origin & Evolution (1-50)</button>
+        <button onclick="filterModule(2)" id="mod-btn-2" class="mod-filter-btn w-full text-left px-3 py-2 rounded-lg font-medium hover:bg-slate-100 text-slate-700">2. Community Ecology (51-100)</button>
+        <button onclick="filterModule(3)" id="mod-btn-3" class="mod-filter-btn w-full text-left px-3 py-2 rounded-lg font-medium hover:bg-slate-100 text-slate-700">3. Climate & Biomes (101-150)</button>
+        <button onclick="filterModule(4)" id="mod-btn-4" class="mod-filter-btn w-full text-left px-3 py-2 rounded-lg font-medium hover:bg-slate-100 text-slate-700">4. Biodiversity & Conservation (151-200)</button>
+      </div>
+
+      <!-- Controls: Reset & Shuffle -->
+      <div class="grid grid-cols-2 gap-2 mb-3">
+        <button onclick="shuffleQuestions()" class="w-full px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-medium rounded-lg text-xs transition flex items-center justify-center space-x-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          <span>Shuffle</span>
+        </button>
+        <button onclick="resetQuiz()" class="w-full px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-medium rounded-lg text-xs transition flex items-center justify-center space-x-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span>Reset</span>
+        </button>
+      </div>
+
+      <hr class="border-slate-200 mb-3" />
+
+      <!-- Question Grid -->
+      <div class="flex-1 overflow-y-auto custom-scrollbar pr-1">
+        <div id="question-grid" class="grid grid-cols-5 gap-1.5 text-xs">
+          <!-- Dynamically Generated Buttons -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- Question Active Content -->
+    <main class="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between">
+      <div>
+        <!-- Question Meta -->
+        <div class="flex items-center justify-between mb-4">
+          <span id="q-module-tag" class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Module 1</span>
+          <span id="q-number-tag" class="text-xs font-semibold text-slate-500">Question 1 of 200</span>
+        </div>
+
+        <!-- Question Text -->
+        <h3 id="q-text" class="text-xl font-semibold text-slate-900 mb-6 leading-relaxed">Loading question...</h3>
+
+        <!-- Options Container -->
+        <div id="options-container" class="space-y-3 mb-6">
+          <!-- Options rendered dynamically -->
+        </div>
+
+        <!-- Feedback Box -->
+        <div id="feedback-box" class="hidden p-4 rounded-lg border text-sm leading-relaxed mb-4">
+          <!-- Feedback rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Footer Action Navigation -->
+      <div class="flex items-center justify-between pt-4 border-t border-slate-200 mt-6">
+        <button id="prev-btn" onclick="navigate(-1)" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg text-sm transition">Previous</button>
+        <div class="flex items-center space-x-2">
+          <button id="hint-btn" onclick="toggleHint()" class="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-medium rounded-lg text-sm transition">Hint</button>
+        </div>
+        <button id="next-btn" onclick="navigate(1)" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg text-sm transition">Next</button>
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    const rawQuestions = [
+      // MODULE 1: EVOLUTION & ORIGIN OF LIFE (1-50)
+      { m:1, q:"Based on radioactive dating, what is the estimated age of the Earth?", a:["3.5 billion years", "4.5 billion years", "1.0 billion years", "65 million years"], c:1, h:"The Earth formed roughly 4.5 billion years ago." },
+      { m:1, q:"Which gas was largely LACKING in the early atmosphere of Earth?", a:["Nitrogen", "Methane", "Oxygen", "Ammonia"], c:2, h:"Oxygen was absent until photosynthetic cyanobacteria evolved." },
+      { m:1, q:"The belief that the universe and life were created by God out of nothing (ex nihilo) is called:", a:["Spontaneous Generation", "Panspermia", "Creationism", "Primordial Soup"], c:2, h:"Refers to a divine, non-scientific concept of creation." },
+      { m:1, q:"Which theory suggests life originated in outer space and arrived via meteorites or comets?", a:["Panspermia Theory", "Oparin-Haldane Theory", "Chemical Evolution", "Spontaneous Generation"], c:0, h:"'Pan' means all, 'spermia' means seeds from outer space." },
+      { m:1, q:"Jan Baptista von Helmont's 'Recipe for Mice' was a classic example supporting:", a:["Natural Selection", "Spontaneous Generation", "Creationism", "Panspermia"], c:1, h:"The idea that life arises spontaneously from nonliving matter." },
+      { m:1, q:"Who proposed that energy added to primitive atmospheric gases formed the building blocks of life?", a:["Charles Darwin", "Alexander Oparin", "Ernst Haeckel", "Jan Baptista von Helmont"], c:1, h:"Co-creator of the Primordial Soup model." },
+      { m:1, q:"In the Miller-Urey experiment, electric sparks were discharged to mimic:", a:["Volcanic heat", "Lightning", "Solar radiation", "Meteor impacts"], c:1, h:"Simulated high-energy electrical atmospheric discharges." },
+      { m:1, q:"Chemical evolution required approximately how long to produce the first protocells?", a:["65 million years", "1 billion years", "3.7 billion years", "500 million years"], c:1, h:"Took roughly 1 billion years before biological evolution began." },
+      { m:1, q:"Biological evolution began approximately how many billion years ago?", a:["4.5", "3.7", "1.0", "0.5"], c:1, h:"Followed the 1 billion years of chemical evolution." },
+      { m:1, q:"What were the earliest forms of single-celled life to evolve on Earth?", a:["Eukaryotic algae", "Prokaryotic bacteria", "Multicellular fungi", "Viruses"], c:1, h:"Simple prokaryotes like cyanobacteria." },
+      { m:1, q:"Cumulative genetic changes in populations across successive generations are defined as:", a:["Adaptation", "Evolution", "Speciation", "Acclimatization"], c:1, h:"Core definition of biological evolution." },
+      { m:1, q:"Charles Darwin published his findings on natural selection in 1859 in which famous book?", a:["The Origin of Species", "Principles of Geology", "Silent Spring", "Descent of Man"], c:0, h:"Full title: 'On the Origin of Species by Means of Natural Selection'." },
+      { m:1, q:"Fossils provide physical evidence of ancient life, but represent approximately what percentage of all species that ever lived?", a:["10%", "50%", "1%", "25%"], c:2, h:"The fossil record is incomplete and rare." },
+      { m:1, q:"Which scientific discipline studies the geographic locations and distributions of organisms?", a:["Comparative Anatomy", "Biogeography", "Molecular Biology", "Paleontology"], c:1, h:"Combines biology and geographical distribution." },
+      { m:1, q:"Human hands, horse forelegs, and bat wings share similar bone structures (humerus, radius, ulna) indicating common ancestry. This is an example of:", a:["Comparative Anatomy", "Molecular Biology", "Biogeography", "Genetic Engineering"], c:0, h:"Anatomical homologies." },
+      { m:1, q:"Natural selection acts directly on which level of biological organization to cause evolution?", a:["Individuals", "Populations", "Communities", "Ecosystems"], c:1, h:"Populations evolve over time; individuals survive and reproduce." },
+      { m:1, q:"Which of the following is NOT one of the four natural conditions guiding natural selection?", a:["High reproductive capacity", "Heritable variation", "Unlimited natural resources", "Differential reproductive success"], c:2, h:"Resources are limited, creating competition." },
+      { m:1, q:"On the Galápagos Islands, Darwin observed 14 species of finches that evolved different beak shapes primarily to adapt to different:", a:["Nesting sites", "Diets", "Mating displays", "Predators"], c:1, h:"Beak shapes adapted to seeds, insects, cacti, etc." },
+      { m:1, q:"The modern synthesis combines Darwinian natural selection with principles of:", a:["Geology", "Genetics", "Ecology", "Thermodynamics"], c:1, h:"Integrates Mendelian genetics and DNA mutations." },
+      { m:1, q:"Random changes in the nucleotide base sequence of DNA are called:", a:["Adaptations", "Mutations", "Recombinations", "Transgressions"], c:1, h:"Primary source of new genetic variation." },
+      { m:1, q:"When bacteria survive antibiotic exposure and reproduce, replacing normal strains, this demonstrates:", a:["Natural Selection", "Spontaneous Generation", "Artificial Selection", "Resource Partitioning"], c:0, h:"Evolution of genetic resistance." },
+      { m:1, q:"A heritable trait that increases an organism's chances of survival and reproduction in a given environment is a(n):", a:["Mutation", "Adaptation", "Niche", "Ecotone"], c:1, h:"Enhances fitness under prevailing conditions." },
+      { m:1, q:"Which of the following is one of the three major anatomical adaptations that allowed humans to become a dominant species?", a:["Opposable thumbs", "Fur camouflage", "High reproductive rate", "Sharp claws"], c:0, h:"Along with walking upright and a complex brain." },
+      { m:1, q:"What limits a slow-reproducing species' ability to adapt quickly to rapid environmental changes?", a:["Lack of natural selection", "Reproductive capacity", "Overabundance of mutations", "Low competition"], c:1, h:"Slow reproduction means fewer generations to pass on advantageous traits." },
+      { m:1, q:"In evolutionary terms, 'survival of the fittest' refers specifically to:", a:["Physical strength", "Reproductive success", "Body size", "Aggressive behavior"], c:1, h:"Fitness is measured by viable offspring produced." },
+      { m:1, q:"The movement of massive landmasses on Earth's crust that influenced climate and species distribution is known as:", a:["Volcanism", "Tectonic plate movement", "Erosion", "Glaciation"], c:1, h:"Driven by continental drift." },
+      { m:1, q:"The ancient supercontinent where all landmasses were joined roughly 225 million years ago was named:", a:["Laurasia", "Gondwanaland", "Pangaea", "Eurasia"], c:2, h:"Meaning 'all lands'." },
+      { m:1, q:"Which geological process involves the breaking down of rock, soil, and minerals through physical or chemical means?", a:["Erosion", "Weathering", "Volcanism", "Subduction"], c:1, h:"Weathering breaks down material; erosion moves it." },
+      { m:1, q:"Modern horses evolved from a small Eocene ancestor named:", a:["Equus", "Hyracotherium", "Merychippus", "Pliohippus"], c:1, h:"Also known as Eohippus or dawn horse." },
+      { m:1, q:"Cyanobacteria were critically important in early Earth history because they produced:", a:["Methane", "Oxygen", "Ammonia", "Carbon dioxide"], c:1, h:"Photosynthesis generated free atmospheric oxygen." },
+      { m:1, q:"A protocell is best described as:", a:["A fully formed eukaryotic cell", "A membrane-bound aggregate of organic polymers forming a primitive pre-cell", "A virus particle", "A fossilized bacterium"], c:1, h:"Precursor stage before true living cells." },
+      { m:1, q:"Coacervates and microspheres are examples of:", a:["Early DNA molecules", "Organic polymer aggregates", "Multicellular fossils", "Inorganic rocks"], c:1, h:"Pre-cellular chemical structures." },
+      { m:1, q:"Which scientist demonstrated abiotic synthesis of amino acids in 1953?", a:["Stanley Miller", "Charles Darwin", "Robert Paine", "Ernst Haeckel"], c:0, h:"Tested the Oparin-Haldane hypothesis." },
+      { m:1, q:"Structures that are anatomically similar because of shared ancestry are called:", a:["Analogous structures", "Homologous structures", "Vestigial structures", "Modified structures"], c:1, h:"Reflect shared evolutionary lineage." },
+      { m:1, q:"Modern humans (Homo sapiens) appeared approximately how long before midnight on the 12-hour geological clock of Earth history?", a:["1 hour", "2 seconds", "10 minutes", "30 seconds"], c:1, h:"Extremely recent in Earth's history." },
+      { m:1, q:"Which event allowed mammals to rapidly adaptive-radiate and diversify?", a:["Extinction of dinosaurs ~65 million years ago", "Formation of Pangaea", "Origin of photosynthesis", "The ice age"], c:0, h:"Opened up ecological niches at the start of the Cenozoic era." },
+      { m:1, q:"What term describes the intentional breeding of plants or animals by humans for desired traits?", a:["Natural selection", "Artificial selection", "Genetic drift", "Speciation"], c:1, h:"Involves human-guided selective breeding." },
+      { m:1, q:"Genetic drift and natural selection both lead to changes in allele frequencies, but genetic drift is primarily driven by:", a:["Environmental fitness", "Random chance", "Human choice", "Mutation rates"], c:1, h:"Random sampling effects in small populations." },
+      { m:1, q:"The ultimate source of all NEW genetic alleles in a population is:", a:["Sexual reproduction", "Mutation", "Natural selection", "Migration"], c:1, h:"Only mutation creates entirely new sequence variants." },
+      { m:1, q:"If a population lacks the genetic traits required to survive a rapid environmental change, the population will likely:", a:["Mutate instantly", "Become extinct", "Evolve into eukaryotes", "Migrate back in time"], c:1, h:"Without pre-existing variations or fast mutations, extinction occurs." },
+      { m:1, q:"Which structure in cyanobacteria is responsible for carbon fixation?", a:["Ribosome", "Carboxysome", "Thylakoid", "Capsule"], c:1, h:"Microcompartment containing RuBisCO." },
+      { m:1, q:"What gas did Miller and Urey include in their simulated atmosphere alongside methane and ammonia?", a:["Free Oxygen", "Hydrogen gas", "Chlorine", "Ozone"], c:1, h:"Included H2 to simulate a reducing atmosphere." },
+      { m:1, q:"Massive volcanic eruptions affect global evolution by:", a:["Blocking sunlight and altering global climate", "Increasing genetic mutations directly", "Stopping continental drift", "Creating oceans"], c:0, h:"Ash and aerosol release alter weather and trigger extinctions." },
+      { m:1, q:"Which factor does NOT contribute to the incompleteness of the fossil record?", a:["Decomposition of soft tissue", "Organisms lacking hard skeletons", "Fossils destroyed by geological heat/pressure", "Fossils being overly abundant in all rock layers"], c:3, h:"Fossils are rare, not overly abundant." },
+      { m:1, q:"Comparative molecular biology determines evolutionary relationships by measuring differences in:", a:["Bone lengths", "Nucleotide or amino acid sequences", "Geographic elevation", "Fossil depth"], c:1, h:"Compares DNA/RNA or protein primary structures." },
+      { m:1, q:"Macroevolution refers to evolutionary changes that:", a:["Occur only within a single gene pool", "Result in the formation of new taxonomic groups or species over long periods", "Happen within a single generation", "Are controlled entirely in laboratories"], c:1, h:"Large-scale evolutionary shifts over geological time." },
+      { m:1, q:"The term 'fitness' in evolutionary biology is best quantified by:", a:["Lifespan of the organism", "Number of fertile offspring contributed to the next generation", "Physical mass and muscle", "Speed and agility"], c:1, h:"Relative reproductive output." },
+      { m:1, q:"Which type of natural selection favors individuals at both extremes of a trait spectrum over intermediate phenotypes?", a:["Stabilizing selection", "Directional selection", "Disruptive selection", "Artificial selection"], c:2, h:"Splits phenotypic distribution toward both tails." },
+      { m:1, q:"The evolutionary history and relationship among a group of organisms is represented in a:", a:["Climograph", "Phylogenetic tree", "Ecological pyramid", "Species-area curve"], c:1, h:"Branching diagram showing evolutionary lineages." },
+      { m:1, q:"Which scientist coined the term 'ecology' in 1866?", a:["Charles Darwin", "Ernst Haeckel", "Alexander von Humboldt", "Robert Paine"], c:1, h:"German biologist who named Oekologie." },
+
+      // MODULE 2: COMMUNITY ECOLOGY (51-100)
+      { m:2, q:"The study of interactions among organisms and between organisms and their abiotic environment is:", a:["Ecology", "Evolution", "Biogeography", "Genetics"], c:0, h:"Coined by Haeckel." },
+      { m:2, q:"All the populations of different species that live and interact together within an area at the same time form a(n):", a:["Organism", "Population", "Community", "Ecosystem"], c:2, h:"Multiple species interacting in one area." },
+      { m:2, q:"An ecosystem consists of a biological community plus its:", a:["Biotic factors only", "Physical (abiotic) environment", "Global biosphere", "Landscapes"], c:1, h:"Combines living organisms with non-living environment." },
+      { m:2, q:"An organism's ecological 'profession' or lifestyle, including its resource usage and adaptations, is its:", a:["Habitat", "Niche", "Ecotone", "Biome"], c:1, h:"Habitat is the address; niche is the profession." },
+      { m:2, q:"The potential, idealized niche that an organism could occupy in the absence of competition is its:", a:["Realized niche", "Fundamental niche", "Ecotone", "Primary niche"], c:1, h:"The full potential range of conditions tolerated." },
+      { m:2, q:"When brown anoles out-competed native green anoles in Florida, restricting green anoles to higher perches, green anoles occupied their:", a:["Fundamental niche", "Realized niche", "Primary habitat", "Ecotone"], c:1, h:"The actual niche occupied after competition." },
+      { m:2, q:"The Principle of Competitive Exclusion states that two species cannot coexist indefinitely if their niches are:", a:["Slightly overlapping", "Identical", "Completely different", "Temporal"], c:1, h:"Identical niches lead to one outcompeting the other." },
+      { m:2, q:"Five species of warblers coexisting in the same spruce trees by feeding at different heights and locations is an example of:", a:["Competitive exclusion", "Resource partitioning", "Parasitism", "Primary succession"], c:1, h:"Dividing resources to reduce competition." },
+      { m:2, q:"The back-and-forth evolutionary adjustments between interacting species over time is called:", a:["Coevolution", "Convergent evolution", "Speciation", "Succession"], c:0, h:"Joint evolution of two or more interacting species." },
+      { m:2, q:"A symbiotic relationship where both participating organisms benefit (+/+) is called:", a:["Commensalism", "Mutualism", "Parasitism", "Predation"], c:1, h:"Win-win interaction." },
+      { m:2, q:"Acacia ants receiving shelter and nectar from an acacia tree while defending the tree from herbivores is an example of:", a:["Mutualism", "Commensalism", "Parasitism", "Competition"], c:0, h:"Both species derive vital benefits." },
+      { m:2, q:"Epiphytes growing on high tree branches to access sunlight without taking nutrients from or harming the tree represent:", a:["Mutualism", "Commensalism", "Parasitism", "Predation"], c:1, h:"+/0 relationship (one benefits, one unaffected)." },
+      { m:2, q:"Ticks feeding on human blood and transmitting Lyme disease represent which interaction?", a:["Commensalism", "Parasitism", "Mutualism", "Resource partitioning"], c:1, h:"+/- relationship where host is harmed." },
+      { m:2, q:"Why do parasites rarely kill their host immediately?", a:["They lack physical strength", "They depend on the host for ongoing food, shelter, and transmission", "Hosts are immune", "Parasites are herbivorous"], c:1, h:"Killing the host destroys their own home/food source." },
+      { m:2, q:"The goldenrod spider using color change to blend into flowers and ambush prey exhibits:", a:["Mimicry", "Camouflage", "Warning coloration", "Social behavior"], c:1, h:"Crypsis to avoid detection by prey." },
+      { m:2, q:"Bright, vivid coloration in poisonous prey species that alerts predators to danger is known as:", a:["Camouflage", "Aposematic / Warning coloration", "Cryptic coloration", "Disruptive coloration"], c:1, h:"Signals toxicity or unpalatability." },
+      { m:2, q:"Competition between members of the SAME species for limited resources is called:", a:["Interspecific competition", "Intraspecific competition", "Competitive exclusion", "Resource partitioning"], c:1, h:"'Intra' means within the same species." },
+      { m:2, q:"Weeds competing with garden crops for sunlight and soil nutrients is an example of:", a:["Intraspecific competition", "Interspecific competition", "Mutualism", "Commensalism"], c:1, h:"'Inter' means between different species." },
+      { m:2, q:"Species that normally live and thrive in a particular ecosystem naturally (e.g., Narra tree in Philippines) are:", a:["Non-native species", "Native species", "Indicator species", "Invasive species"], c:1, h:"Naturally occurring endemic or indigenous species." },
+      { m:2, q:"Exotic or alien species introduced into a new habitat that spread autonomously and alter ecosystems are:", a:["Native species", "Invasive / Non-native species", "Keystone species", "Indicator species"], c:1, h:"Introduced organisms that cause ecological harm." },
+      { m:2, q:"Organisms that provide early warnings of environmental damage or ecosystem health changes (e.g., lichens sensitive to sulfur dioxide) are:", a:["Keystone species", "Indicator species", "Dominant species", "Foundation species"], c:1, h:"Reflect subtle environmental disruptions." },
+      { m:2, q:"Which species type exerts strong control on community structure not by numerical abundance, but by pivotal ecological roles (e.g., Pisaster sea star, Gray Wolf)?", a:["Dominant species", "Keystone species", "Indicator species", "Pioneer species"], c:1, h:"Removal causes drastic community collapse." },
+      { m:2, q:"When sea otters are removed from Pacific kelp forests, kelp vanishes because of an explosive population explosion of:", a:["Kelp bass", "Sea urchins", "Crabs", "Mussels"], c:1, h:"Otters keep herbivorous urchins in check." },
+      { m:2, q:"Organisms that physically modify or construct habitats, creating environments for other species (e.g., Beavers, Corals), are:", a:["Indicator species", "Foundation species / Ecosystem engineers", "Dominant species", "Keystone predators"], c:1, h:"Engineers that physically build habitat structures." },
+      { m:2, q:"Species in a community that are most abundant or collectively possess the highest total biomass are:", a:["Keystone species", "Dominant species", "Indicator species", "Invasive species"], c:1, h:"Hold the highest biomass share." },
+      { m:2, q:"The sequential process of community development over time where species replace one another is:", a:["Coevolution", "Ecological succession", "Eutrophication", "Stratification"], c:1, h:"Predictable progression of biological communities." },
+      { m:2, q:"Community structure development occurring on a brand new, previously uninhabited site lacking soil (e.g., cooled lava, bare rock) is:", a:["Primary succession", "Secondary succession", "Thermal stratification", "Resource partitioning"], c:0, h:"Starts completely from scratch without soil." },
+      { m:2, q:"In primary succession on bare rock, the pioneer community typically consists of:", a:["Hardwood trees", "Lichens and mosses", "Perennial shrubs", "Pine seedlings"], c:1, h:"Lichens break down rock into initial soil." },
+      { m:2, q:"Community redevelopment occurring after a disturbance destroys existing vegetation but leaves soil intact (e.g., abandoned farm, post-forest fire) is:", a:["Primary succession", "Secondary succession", "Eutrophication", "Zone shifting"], c:1, h:"Soil is already present, speeding up recovery." },
+      { m:2, q:"In secondary succession on abandoned North Carolina farmland, the typical early plant invaders after crabgrass are:", a:["Oak trees", "Pine seedlings and annual weeds", "Lichens", "Mosses"], c:1, h:"Weeds and fast-growing pines colonize fertile soil quickly." },
+      { m:2, q:"An ecotone is best defined as:", a:["A deep aphotic lake zone", "A transitional zone where two distinct ecological communities meet", "A climax forest stage", "A single species niche"], c:1, h:"Boundary region rich in species from both sides." },
+      { m:2, q:"The increased species richness and diversity observed at transitional boundary zones between communities is known as the:", a:["Edge effect", "Pioneer effect", "Eutrophication effect", "Latitudinal gradient"], c:0, h:"Ecotones exhibit distinct edge effects." },
+      { m:2, q:"When two species attempt to occupy the exact same niche, the most likely immediate outcome according to competitive exclusion is:", a:["Mutualism evolves", "One species will be locally eliminated or forced to shift its niche", "Both species increase in population", "Primary succession begins"], c:1, h:"Competitive exclusion drives one out or forces niche divergence." },
+      { m:2, q:"In Yellowstone National Park, reintroducing gray wolves suppressed overgrazing elk populations, allowing willow and aspen trees to recover along rivers. This chain reaction is a:", a:["Trophic cascade", "Primary succession", "Eutrophication", "Competitive exclusion"], c:0, h:"Top-down control flowing through food webs." },
+      { m:2, q:"Which organism is a classic Philippine example of an endemic endangered raptor species?", a:["Marianas flying fox", "Philippine Eagle", "Golden Toad", "Passenger Pigeon"], c:1, h:"Iconic top avian predator in Philippine forests." },
+      { m:2, q:"In the intertidal sea star removal experiment by Robert Paine, removing Pisaster caused overall community species richness to:", a:["Increase dramatically", "Plummet / Collapse", "Remain unchanged", "Double"], c:1, h:"Mussels monopolized space, crowding out all other species." },
+      { m:2, q:"An animal that eats both producers (plants) and primary consumers (animals) is classified as a(n):", a:["Herbivore", "Carnivore", "Omnivore", "Detritivore"], c:2, h:"Consumes multiple trophic levels." },
+      { m:2, q:"Fungi and heterotrophic bacteria that break down dead organic matter and recycle nutrients back to abiotic reservoirs are:", a:["Producers", "Primary consumers", "Decomposers / Saprotrophs", "Secondary consumers"], c:2, h:"Recycle essential matter." },
+      { m:2, q:"A linear network showing 'who eats whom' in an ecosystem is a food chain, whereas interconnected food chains form a:", a:["Food web", "Trophic pyramid", "Climograph", "Biomark"], c:0, h:"Complex matrix of feeding interactions." },
+      { m:2, q:"Only about what percentage of energy is typically transferred from one trophic level to the next higher level?", a:["50%", "90%", "10%", "1%"], c:2, h:"10% law of energy transfer efficiency." },
+      { m:2, q:"Where is the greatest proportion of biomass and energy located in a standard terrestrial ecological pyramid?", a:["Apex predators", "Secondary consumers", "Primary producers", "Decomposers"], c:2, h:"Base of the pyramid." },
+      { m:2, q:"Batesian mimicry occurs when:", a:["Two venomous species look identical", "A harmless prey species mimics the warning appearance of a toxic species", "A predator blends into leaves", "A parasite lives inside a host"], c:1, h:"Palatable mimic hides behind toxic model's appearance." },
+      { m:2, q:"Müllerian mimicry occurs when:", a:["A harmless species mimics a dangerous one", "Two or more unpalatable/dangerous species resemble each other", "An animal changes color like a chameleon", "A plant smells like decaying meat"], c:1, h:"Multiple harmful species share a common warning pattern." },
+      { m:2, q:"The physical location where an organism naturally resides is its:", a:["Niche", "Habitat", "Biome", "Ecotone"], c:1, h:"The 'address' of the organism." },
+      { m:2, q:"Destruction of ocean benthic habitats across massive areas by dragging weighted commercial fishing nets is called:", a:["Poaching", "Deep-sea trawling", "Eutrophication", "Thermal turnover"], c:1, h:"Scrapes and destroys benthic floor ecosystems." },
+      { m:2, q:"Illegal hunting, capturing, or harvesting of wild animals is termed:", a:["Overexploitation", "Poaching", "Bioremediation", "Transgenics"], c:1, h:"Unlawful taking of wildlife." },
+      { m:2, q:"In Australia, the introduction of the invasive Red Fox caused severe decline in native Quolls because both occupied similar niches for prey. This demonstrates:", a:["Interspecific competition with an invasive species", "Mutualistic coevolution", "Primary succession", "Commensalism"], c:0, h:"Invasive predators outcompete endemic fauna." },
+      { m:2, q:"A climax community was traditionally viewed as:", a:["The initial pioneer stage of rock colonization", "A stable, mature community that undergoes minimal change over time", "A severely polluted aquatic environment", "A temporary seasonal bloom"], c:1, h:"Traditional concept of end-stage succession." },
+      { m:2, q:"Which type of disturbance opens up space in communities and can actually maintain higher local biodiversity if occurring at intermediate frequencies?", a:["Intermediate disturbance hypothesis", "Extreme catastrophe hypothesis", "Primary succession model", "Competitive exclusion principle"], c:0, h:"Moderate disturbance prevents competitive monopolization." },
+      { m:2, q:"The relationship between clownfish and sea anemones (clownfish gains protection from stinging tentacles while driving away predators/leaving food scraps) is best classified as:", a:["Commensalism or Mutualism", "Obligate parasitism", "Intraspecific competition", "Primary succession"], c:0, h:"Mutualistic/commensal protective association." },
+
+      // MODULE 3: CLIMATE & BIOMES (101-150)
+      { m:3, q:"Short-term physical conditions of the lower atmosphere (temperature, precipitation, humidity, wind over hours/days) describe:", a:["Climate", "Weather", "Biome", "Stratification"], c:1, h:"Weather changes rapidly; climate is long-term average." },
+      { m:3, q:"Climate refers to the average atmospheric conditions in a given region measured over a minimum period of:", a:["Days", "Weeks", "Decades / 30+ years", "Months"], c:2, h:"Long-term weather patterns over decades." },
+      { m:3, q:"Why are tropical regions near the equator warmer than polar regions?", a:["Equatorial regions are closer to the moon", "Sunlight strikes near the equator at a direct 90-degree angle, concentrating solar energy", "The equator has more ocean surface", "Polar regions lack atmospheric air"], c:1, h:"Direct solar rays spread energy over a smaller surface area." },
+      { m:3, q:"A plot of mean annual temperature versus mean annual precipitation for a region used to summarize biomes is a:", a:["Climograph", "Topograph", "Demograph", "Hydrograph"], c:0, h:"Graphs temperature against precipitation." },
+      { m:3, q:"The two primary physical climate factors determining the global distribution of terrestrial biomes are:", a:["Wind speed and soil pH", "Temperature and precipitation", "Latitude and longitude", "Elevation and nitrogen level"], c:1, h:"Key axes on a standard climograph." },
+      { m:3, q:"Which large, treeless northern biome is characterized by permafrost, boggy plains, mosses, and extremely short summers?", a:["Taiga / Boreal forest", "Arctic Tundra", "Chaparral", "Temperate grassland"], c:1, h:"Far north with permanently frozen ground." },
+      { m:3, q:"Permafrost is defined as a layer of:", a:["Volcanic ash in soil", "Permanently frozen ground/soil", "Floating ice on arctic lakes", "Packed dense leaf litter"], c:1, h:"Subsurface soil remaining frozen year-round." },
+      { m:3, q:"Which biome consists of coniferous evergreen forests (pine, spruce, fir) located directly south of the tundra across Northern Eurasia and North America?", a:["Temperate rain forest", "Boreal forest / Taiga", "Temperate deciduous forest", "Chaparral"], c:1, h:"Largest terrestrial biome by area, cold severe winters." },
+      { m:3, q:"The temperate rain forest biome of the Pacific Northwest is heavily dominated by evergreen conifers and receives high moisture due to:", a:["Frequent tropical monsoons", "High annual precipitation and dense coastal fog", "Melting arctic ice caps", "Proximity to desert winds"], c:1, h:"Coastal fog and heavy rain sustain giant conifers." },
+      { m:3, q:"Which biome features rich topsoil, hot summers, cold winters, and broad-leaf hardwood trees that drop leaves seasonally?", a:["Boreal forest", "Temperate deciduous forest", "Savanna", "Chaparral"], c:1, h:"First biome widely cleared for agriculture in North America/Europe." },
+      { m:3, q:"North American tallgrass prairies and shortgrass prairies belong to which biome?", a:["Savanna", "Temperate grassland", "Chaparral", "Tundra"], c:1, h:"Deep fertile soils, hot summers, cold winters, moderate rainfall." },
+      { m:3, q:"A Mediterranean climate with mild, wet winters and hot, dry summers dominated by spiny evergreen shrubs and frequent wildfires defines the:", a:["Chaparral / Shrubland", "Savanna", "Desert", "Taiga"], c:0, h:"Fire-adapted Mediterranean shrubland." },
+      { m:3, q:"Deserts are defined as arid lands receiving less than how many inches of rain per year?", a:["30 inches", "60 inches", "10 inches", "100 inches"], c:2, h:"Extremely dry, receiving under 25 cm (10 in) annually." },
+      { m:3, q:"A tropical grassland characterized by widely scattered acacia trees, distinct rainy and prolonged dry seasons, and huge herds of grazing herbivores (zebra, wildebeest) is a:", a:["Chaparral", "Savanna", "Temperate grassland", "Tropical dry forest"], c:1, h:"African plains with seasonal rainfall." },
+      { m:3, q:"Which biome features the highest species richness, warm temperatures year-round, rain almost daily (80-180 in/yr), and nutrient-poor weathered soils?", a:["Temperate deciduous forest", "Tropical rain forest", "Boreal forest", "Savanna"], c:1, h:"Lush vertical stratification, high canopy biodiversity." },
+      { m:3, q:"As altitude/elevation increases up a mountain peak, the shifts in vegetation zones closely resemble shifts seen with increasing:", a:["Longitude", "Latitude (moving toward the poles)", "Ocean depth", "Precipitation"], c:1, h:"Higher altitude mirrors higher latitude." },
+      { m:3, q:"Salinity, light availability, dissolved oxygen, and nutrient concentration are key factors structuring:", a:["Terrestrial biomes", "Aquatic ecosystems", "Tectonic plates", "Soil horizons"], c:1, h:"Abiotic parameters of aquatic environments." },
+      { m:3, q:"Microscopic, free-floating photosynthetic organisms in aquatic systems (e.g., algae, cyanobacteria) are classified as:", a:["Zooplankton", "Phytoplankton", "Nekton", "Benthos"], c:1, h:"Plant-like floating primary producers." },
+      { m:3, q:"Strongly swimming aquatic organisms capable of moving independently of currents (e.g., fish, turtles, whales) are:", a:["Plankton", "Nekton", "Benthos", "Periphyton"], c:1, h:"Active free swimmers." },
+      { m:3, q:"Bottom-dwelling marine and freshwater organisms that burrow, crawl, or attach to substrate (e.g., crabs, sponges, worms) are:", a:["Nekton", "Phytoplankton", "Benthos", "Zooplankton"], c:2, h:"Reside on the benthic floor." },
+      { m:3, q:"Freshwater ecosystems cover approximately what percentage of Earth's surface?", a:["71%", "25%", "2%", "50%"], c:2, h:"Occupies a very small surface fraction." },
+      { m:3, q:"The shallow, highly productive water zone along the shore of a lake where rooted aquatic plants grow is the:", a:["Limnetic zone", "Littoral zone", "Profundal zone", "Benthic zone"], c:1, h:"Shallow edge zone of lakes." },
+      { m:3, q:"The open, sunlit surface water layer of a lake away from the shore inhabited by plankton is the:", a:["Littoral zone", "Limnetic zone", "Profundal zone", "Benthic zone"], c:1, h:"Open water well-lit upper zone." },
+      { m:3, q:"The deep, dark layer of a lake below light penetration where no photosynthesis occurs is the:", a:["Limnetic zone", "Profundal zone", "Littoral zone", "Photic zone"], c:1, h:"Aphotic deep zone." },
+      { m:3, q:"The seasonal mixing of lake water layers in spring and fall that redistributes oxygen to depths and nutrients to the surface is called:", a:["Eutrophication", "Turnover / Overturn", "Thermal stratification", "Upwelling"], c:1, h:"Breakdown of thermal layers causes water overturn." },
+      { m:3, q:"Nutrient enrichment of a body of water by nitrogen and phosphorus leading to algal blooms and oxygen depletion is:", a:["Eutrophication", "Thermal turnover", "Biomagnification", "Salinization"], c:0, h:"Causes explosive algal growth and fish kills." },
+      { m:3, q:"Freshwater wetlands dominated by grass-like herbaceous plants are marshes, whereas wetlands dominated by woody trees/shrubs are:", a:["Bogs", "Swamps", "Estuaries", "Ecotones"], c:1, h:"Swamps are forested wetlands." },
+      { m:3, q:"A coastal body of water, partly enclosed by land, where fresh water from rivers mixes with salty ocean water is a(n):", a:["Ecotone", "Estuary", "Coral reef", "Profundal zone"], c:1, h:"Brackish water mixing environment." },
+      { m:3, q:"Tropical coastal wetlands dominated by salt-tolerant woody trees that protect shorelines from erosion are:", a:["Salt marshes", "Mangrove forests", "Kelp forests", "Freshwater swamps"], c:1, h:"Tropical equivalent of temperate salt marshes." },
+      { m:3, q:"Which atmospheric global circulation cell is located between the equator and 30 degrees North/South latitude?", a:["Ferrel cell", "Hadley cell", "Polar cell", "Jet stream"], c:1, h:"Rising moist air at equator drops rain; dry air falls at 30 degrees." },
+      { m:3, q:"At approximately 30 degrees North and South latitudes, sinking dry air masses create world-famous:", a:["Tropical rain forests", "Deserts", "Taiga forests", "Freshwater marshes"], c:1, h:"Subtropical high-pressure dry belts." },
+      { m:3, q:"Which lake zone refers directly to the immediate bottom sediment floor?", a:["Limnetic zone", "Benthic zone", "Profundal zone", "Littoral zone"], c:1, h:"Benthos live in the benthic zone." },
+      { m:3, q:"Thermal stratification in summer temperate lakes divides water into an upper warm layer called the epilimnion and a cold bottom layer called the:", a:["Metalimnion", "Hypolimnion", "Thermocline", "Littoral"], c:1, h:"Cold, dense lower layer." },
+      { m:3, q:"The boundary layer in a stratified lake where temperature changes rapidly with depth is the:", a:["Epilimnion", "Thermocline / Metalimnion", "Profundal", "Littoral"], c:1, h:"Zone of rapid temperature decline." },
+      { m:3, q:"Which ecosystem service is NOT directly provided by freshwater wetlands?", a:["Flood mitigation", "Groundwater recharge", "Trapping pollutants", "Generating oceanic salinity"], c:3, h:"Wetlands filter fresh water, not ocean salt." },
+      { m:3, q:"What is the freezing point of typical salt water compared to fresh water ($0^\\circ\\text{C}$)?", a:["$0^\circ\text{C}$", "$-1.9^\circ\text{C}$", "$100^\circ\text{C}$", "$-10^\circ\text{C}$"], c:1, h:"Salt lowers the freezing point of water." },
+      { m:3, q:"Most species residing in tropical rain forests live in which specific structural layer?", a:["Forest floor", "Understory", "Canopy", "River banks"], c:2, h:"Upper treetop canopy holds majority of biodiversity." },
+      { m:3, q:"In flowing-water ecosystems (rivers/streams), headwater streams are usually characterized by:", a:["Slow-moving turbid water", "Shallow, clear, cold, fast-moving water", "High salt salinity", "Absence of oxygen"], c:1, h:"Originates high in mountains with swift currents." },
+      { m:3, q:"A fertile, low-lying plain formed at a river's mouth by deposited sediment as it empties into the ocean is a:", a:["Delta", "Meander", "Waterfall", "Rapids"], c:0, h:"Sediment deposition at river mouth." },
+      { m:3, q:"Overharvesting of old-growth timber in temperate rain forests leads to severe debate over:", a:["Eutrophication", "Clear-cutting", "Permafrost melting", "Salinization"], c:1, h:"Logging method removing all trees from an area." },
+      { m:3, q:"The Arctic Tundra has low primary productivity and low resilience primarily due to:", a:["Excessive summer heat", "Short growing season and harsh cold temperatures", "High nutrient runoff", "Overabundance of trees"], c:1, h:"Extreme climate limits plant growth rates." },
+      { m:3, q:"Biomes located along mountain slopes change systematically with increasing altitude primarily because temperature:", a:["Increases rapidly", "Decreases with higher elevation", "Stays constant", "Doubles every 100 meters"], c:1, h:"Higher altitude equals lower air temperature." },
+      { m:3, q:"Which biome has been most extensively converted into farmland for growing agricultural cereal crops?", a:["Tundra", "Temperate deciduous forest and temperate grassland", "Tropical rain forest", "Desert"], c:1, h:"Prairies and deciduous forests possess deep, rich topsoils." },
+      { m:3, q:"In marine systems, the ocean floor is termed the benthic zone, while open ocean water is the:", a:["Pelagic zone", "Littoral zone", "Estuarine zone", "Limnetic zone"], c:0, h:"Pelagic realm covers open water columns." },
+      { m:3, q:"The area of ocean shoreline exposed to air during low tide and submerged during high tide is the:", a:["Abyssal zone", "Intertidal zone", "Neritic zone", "Pelagic zone"], c:1, h:"Fluctuates daily with tidal cycles." },
+      { m:3, q:"Ocean acidification is caused primarily by seawater absorbing excess atmospheric:", a:["Methane", "Carbon dioxide ($CO_2$)", "Sulfur dioxide", "Nitrogen"], c:1, h:"Forms carbonic acid in ocean waters." },
+      { m:3, q:"Why do deserts experience extreme daily temperature fluctuations (hot days, cold nights)?", a:["Lack of atmospheric water vapor/humidity to trap radiant heat", "Excessive canopy cover", "High soil organic matter", "Continuous ocean currents"], c:0, h:"Dry air allows heat to radiate rapidly back into space at night." },
+      { m:3, q:"Which biome is found in Southern California, South Africa, and around the Mediterranean Sea?", a:["Taiga", "Chaparral", "Tropical rain forest", "Tundra"], c:1, h:"Classic Mediterranean climate zones." },
+      { m:3, q:"Floating microscopic animals that feed on phytoplankton in aquatic food webs are:", a:["Zooplankton", "Benthos", "Nekton", "Corals"], c:0, h:"Animal plankton consumers." },
+      { m:3, q:"A river's flat adjacent land area that periodically overflows during heavy rain is a:", a:["Delta", "Floodplain", "Estuary", "Glacier"], c:1, h:"Flat region subject to seasonal flooding." },
+
+      // MODULE 4: BIODIVERSITY & CONSERVATION (151-200)
+      { m:4, q:"Biological diversity (biodiversity) includes genetic diversity, species diversity, ecosystem diversity, and:", a:["Molecular diversity", "Functional diversity", "Atmospheric diversity", "Geological diversity"], c:1, h:"Includes biological/chemical processes like energy flow." },
+      { m:4, q:"The total number of different species present in a biological community is termed species:", a:["Evenness", "Richness", "Biomass", "Density"], c:1, h:"Count of distinct species." },
+      { m:4, q:"The fundamental mathematical equation balancing global biodiversity over time is:", a:["Speciation + Migration = Biodiversity", "Speciation - Extinction = Biodiversity", "Extinction - Mutation = Biodiversity", "Immigration - Emigration = Biodiversity"], c:1, h:"New species formed minus species lost." },
+      { m:4, q:"Roughly how many species have been scientifically named and described as of recent estimates?", a:["100,000", "1.6 to 2 million", "10 million", "50 million"], c:1, h:"Over 1.6-2.0 million species formally cataloged." },
+      { m:4, q:"Which animal group contains the vast majority of all described species on Earth (~800,000+)?", a:["Vertebrates", "Insects", "Fungi", "Plants"], c:1, h:"Insects make up the majority of named fauna." },
+      { m:4, q:"The general pattern where species richness is highest near the equator and declines toward the poles is the:", a:["Species-area curve", "Latitudinal gradient", "Edge effect", "Eutrophication curve"], c:1, h:"Latitude correlates inversely with species richness." },
+      { m:4, q:"The principle formalizing that larger geographic areas contain more species is the:", a:["Species-area curve", "Latitudinal gradient", "Competitive exclusion principle", "Ecotone rule"], c:0, h:"Area size directly scales with species number." },
+      { m:4, q:"Speciation occurring when physical geographic barriers separate populations for long periods is initiated by:", a:["Reproductive isolation", "Geographic isolation", "Sympatric divergence", "Artificial selection"], c:1, h:"Physical separation by rivers, mountains, etc." },
+      { m:4, q:"When isolated populations accumulate distinct mutations and natural selection changes prevent them from interbreeding, they achieve:", a:["Geographic isolation", "Reproductive isolation", "Eutrophication", "Acclimatization"], c:1, h:"Inability to interbreed defines distinct species." },
+      { m:4, q:"The Arctic Fox (short ears/legs, white fur) and Gray Fox (long ears/legs, brown fur) evolved from a common ancestor due to geographic separation and differing selective pressures of:", a:["Temperature/Climate", "Predator species", "Dietary fruits", "Human breeding"], c:0, h:"Adaptations to extreme cold vs extreme heat." },
+      { m:4, q:"The complete cessation of existence of an entire species globally is:", a:["Local extinction", "Biological extinction", "Eutrophication", "Ecological drift"], c:1, h:"Global death of all individuals of a species." },
+      { m:4, q:"Species naturally confined to only one specific geographic area (e.g., Tamaraw in Mindoro) making them highly vulnerable to extinction are:", a:["Invasive species", "Endemic species", "Dominant species", "Cosmopolitan species"], c:1, h:"Found nowhere else naturally." },
+      { m:4, q:"The continuous, low-level natural disappearance of species over geological time is:", a:["Mass extinction", "Background extinction", "Premature extinction", "Accelerated extinction"], c:1, h:"Normal historical rate of species loss." },
+      { m:4, q:"A catastrophic event where large numbers of species are wiped out in a geologically short period is a:", a:["Background extinction", "Mass extinction", "Secondary succession", "Speciation event"], c:1, h:"Earth has experienced 5 major historical mass extinctions." },
+      { m:4, q:"Human activities have elevated the global extinction rate by how many times above the natural background rate?", a:["2 to 5 times", "100 to 1,000 times", "10,000 to 1,000,000 times", "No change"], c:1, h:"Human impact dramatically accelerates species loss." },
+      { m:4, q:"According to the Endangered Species Act, a species in imminent danger of extinction throughout all or a significant portion of its range is classified as:", a:["Threatened", "Endangered", "Extinct", "Vulnerable"], c:1, h:"Immediate peril of total extinction." },
+      { m:4, q:"A species likely to become endangered within the foreseeable future is classified as:", a:["Endangered", "Threatened", "Extinct", "Least concern"], c:1, h:"Step before becoming endangered." },
+      { m:4, q:"The Golden Toad of Costa Rica's Monteverde Cloud Forest became extinct primarily due to:", a:["Overhunting for meat", "Climate change drying up its breeding habitat", "Invasive trout", "Volcanic ash"], c:1, h:"Drying cloud forests destroyed its habitat." },
+      { m:4, q:"Which Philippine plant is widely recognized for its medicinal leaves used to treat coughs and asthma (ASCOF)?", a:["Aloe vera", "Lagundi (Vitex negundo)", "Narra", "Ipil-ipil"], c:1, h:"Common native herbal remedy." },
+      { m:4, q:"Environmental benefits provided directly or indirectly to humans by natural ecosystems (e.g., water purification, soil creation, carbon storage) are:", a:["Ecosystem services", "Functional niches", "Genetic engineering", "Biogeochemical cycles"], c:0, h:"Services nature provides for free." },
+      { m:4, q:"Monoculture crops with high genetic uniformity in agriculture are particularly vulnerable to:", a:["Increased yield", "Disease and pest outbreaks", "Improved resilience", "Rapid speciation"], c:1, h:"Lack of genetic diversity allows single pathogens to wipe out fields." },
+      { m:4, q:"Selectively breeding organisms with desired genetic traits across multiple generations is:", a:["Genetic engineering", "Artificial selection / Selective breeding", "Recombinant DNA", "Transgenics"], c:1, h:"Traditional cross-breeding technique." },
+      { m:4, q:"Directly altering an organism's genetic material by adding, deleting, or changing DNA sequences using biotechnology is:", a:["Artificial selection", "Genetic engineering", "Natural selection", "Selective breeding"], c:1, h:"Recombinant DNA technology manipulation." },
+      { m:4, q:"Flavr Savr Tomatoes were genetically modified primarily to achieve:", a:["Pest resistance", "Delayed ripening and longer shelf life", "Beta-carotene production", "Rapid growth"], c:1, h:"Gene silencing slowed down softening." },
+      { m:4, q:"Golden Rice was genetically engineered to synthesize which compound to address Vitamin A deficiency?", a:["Vitamin C", "Beta-carotene", "Growth hormone", "Insulin"], c:1, h:"Gives the rice grain a yellow/golden color." },
+      { m:4, q:"Bt Eggplant is genetically engineered to contain a gene from Bacillus thuringiensis conferring:", a:["Drought tolerance", "Pest resistance against shoot borers", "Delayed ripening", "Herbicide immunity"], c:1, h:"Bacterial toxin deters insect pests." },
+      { m:4, q:"AquaBounty AquAdvantage Salmon were genetically engineered to:", a:["Produce beta-carotene", "Grow year-round and reach market size twice as fast", "Survive in fresh water only", "Resist sea lice"], c:1, h:"Expresses growth hormone continuously." },
+      { m:4, q:"A major environmental concern regarding Genetically Modified Organisms (GMOs) is that they may:", a:["Reduce wild crop genetic diversity and interbreed with wild relatives", "Eliminate all natural mutations", "Stop climate change completely", "Increase natural background extinction rate to zero"], c:0, h:"Risk of gene flow to wild species and loss of landraces." },
+      { m:4, q:"E.O. Wilson coined which term for species with fewer than 100 individuals remaining on Earth?", a:["Extinction club", "Hundred Heartbeat Club", "Endangered list", "Red Data group"], c:1, h:"Species nearing complete extinction." },
+      { m:4, q:"Which native Philippine mammal found in Mindoro is critically endangered due to habitat loss and hunting?", a:["Philippine Eagle", "Tamaraw (Bubalus mindorensis)", "Golden toad", "Flying fox"], c:1, h:"Dwarf wild water buffalo endemic to Mindoro." },
+      { m:4, q:"The ability of a biological community to recover quickly to its former state following an environmental disturbance is its:", a:["Resistance", "Resilience", "Succession", "Stratification"], c:1, h:"Speed of bounce-back recovery." },
+      { m:4, q:"The ability of a community to withstand environmental disturbances without undergoing major structural change is its:", a:["Resilience", "Resistance", "Eutrophication", "Niche overlap"], c:1, h:"Capacity to stay intact despite disturbance." },
+      { m:4, q:"Which factor is considered the SINGLE LARGEST cause of premature species extinction caused by human activities globally?", a:["Pollution", "Habitat loss and fragmentation", "Overhunting", "Pet trade"], c:1, h:"Destroying homes of organisms." },
+      { m:4, q:"When large contiguous forest areas are broken into smaller, isolated patches by roads and agriculture, it is termed:", a:["Habitat destruction", "Habitat fragmentation", "Eutrophication", "Secondary succession"], c:1, h:"Splits habitats into smaller fragments." },
+      { m:4, q:"The Sumatran Rhinoceros is threatened with extinction primarily due to poaching for its:", a:["Meat", "Horn (used in traditional medicine)", "Fur", "Tusks"], c:1, h:"Horns highly prized on black markets." },
+      { m:4, q:"Which anti-AIDS medication was originally derived from a chemical compound extracted from a marine sponge?", a:["Penicillin", "AZT (Zidovudine)", "Aspirin", "Quinine"], c:1, h:"Sponge natural product derivative." },
+      { m:4, q:"The famous quote from Dr. Seuss's 'The Lorax' regarding environmental stewardship states: 'Unless someone like you cares a whole awful lot, ...'", a:["Nothing is going to get better. It's not.", "The world will end tomorrow.", "Trees will grow everywhere.", "Technology will save us all."], c:0, h:"Classic plea for conservation responsibility." },
+      { m:4, q:"According to the World Wide Fund for Nature (WWF), wildlife populations declined globally between 1970 and 2020 by roughly:", a:["10%", "Two-thirds (~60-67%)", "90%", "5%"], c:1, h:"Dramatic worldwide drop in vertebrate populations." },
+      { m:4, q:"Genetic resources in wild plant relatives are essential for modern agriculture because they contain genes for:", a:["Flavoring only", "Disease and pest resistance", "Faster cooking times", "Larger leaf sizes"], c:1, h:"Wild strains hold natural resistance genes." },
+      { m:4, q:"Which mass extinction event 250 million years ago wiped out over 90% of marine species and 60% of animal families (including remaining trilobites)?", a:["Ordovician", "Devonian", "Permian", "Cretaceous"], c:2, h:"The 'Great Dying' mass extinction." },
+      { m:4, q:"The mass extinction event 65 million years ago that eliminated the last of the non-avian dinosaurs occurred at the end of which period?", a:["Triassic", "Jurassic", "Cretaceous", "Permian"], c:2, h:"K-Pg boundary extinction event." },
+      { m:4, q:"Which of the following is an indirect economic service provided by biodiversity?", a:["Harvesting timber for lumber", "Biogeochemical cycle regulation and flood control", "Hunting wild game for meat", "Gathering medicinal herbs"], c:1, h:"Indirect ecosystem protection services." },
+      { m:4, q:"Which global region experiences the highest rate of deforestation and tropical biodiversity loss today?", a:["Polar regions", "Tropical rainforests (e.g., Amazon, Southeast Asia)", "Temperate grasslands", "Desert areas"], c:1, h:"Rapid clearing in equatorial rainforests." },
+      { m:4, q:"How does low genetic diversity within a small endangered population heighten its extinction risk?", a:["Increases resistance to all diseases", "Makes the population highly vulnerable to environmental changes and diseases", "Spurs rapid beneficial mutations", "Prevents interspecific competition"], c:1, h:"Inbreeding and lack of variable alleles." },
+      { m:4, q:"The international agreement regulating trade in endangered wild species of plants and animals is abbreviated as:", a:["IUCN", "CITES", "WWF", "EPA"], c:1, h:"Convention on International Trade in Endangered Species." },
+      { m:4, q:"Bioremediation refers to using living organisms (such as genetically engineered bacteria) to:", a:["Clone extinct animals", "Clean up toxic environmental pollutants and oil spills", "Produce golden rice", "Prevent continental drift"], c:1, h:"Degrades or neutralizes pollutants." },
+      { m:4, q:"What happens to an ecosystem when a key keystone predator is removed?", a:["Species diversity increases", "Ecosystem balance collapses and species richness declines", "Primary productivity drops to zero instantly", "All herbivores die"], c:1, h:"Triggers trophic collapse and dominant monopolization." },
+      { m:4, q:"Which human activity leads directly to coastal mangrove forest destruction worldwide?", a:["Acquiring timber and coastal aquaculture (shrimp farms)", "Off-road vehicle recreation", "Desertification", "Deep-sea trawling"], c:0, h:"Cleared for shrimp ponds and developments." },
+      { m:4, q:"The basic concept that living sustainably means meeting present needs without compromising future generations' ability to meet theirs is:", a:["Eutrophication", "Sustainability", "Resource partitioning", "Biogeography"], c:1, h:"Core pillar of environmental stewardship." },
+      { m:4, q:"Everyone's survival requires 5 basic resources: Air, Water, Food, Energy, and:", a:["Gold", "Each Other (Other people & creatures)", "Plastics", "Automobiles"], c:1, h:"Interdependence of living creatures." }
+    ];
+
+    // State management
+    let questions = JSON.parse(JSON.stringify(rawQuestions));
+    let currentIndex = 0;
+    let userAnswers = new Array(questions.length).fill(null);
+    let activeModuleFilter = 'all';
+
+    // UI Elements
+    const qText = document.getElementById('q-text');
+    const optionsContainer = document.getElementById('options-container');
+    const feedbackBox = document.getElementById('feedback-box');
+    const qModuleTag = document.getElementById('q-module-tag');
+    const qNumberTag = document.getElementById('q-number-tag');
+    const scoreDisplay = document.getElementById('score-display');
+    const answeredDisplay = document.getElementById('answered-display');
+    const progressText = document.getElementById('progress-text');
+    const questionGrid = document.getElementById('question-grid');
+
+    // Initialize Quiz
+    function initQuiz() {
+      renderGrid();
+      loadQuestion(0);
+      updateStats();
+    }
+
+    // Render Navigation Grid
+    function renderGrid() {
+      questionGrid.innerHTML = '';
+      questions.forEach((q, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `h-8 w-8 rounded text-xs font-semibold flex items-center justify-center border transition ${getGridBtnClass(idx)}`;
+        btn.innerText = idx + 1;
+        btn.onclick = () => jumpToQuestion(idx);
+        btn.id = `grid-btn-${idx}`;
+        questionGrid.appendChild(btn);
+      });
+    }
+
+    function getGridBtnClass(idx) {
+      if (idx === currentIndex) return 'border-slate-900 bg-slate-900 text-white font-bold ring-2 ring-slate-400';
+      if (userAnswers[idx] !== null) {
+        return userAnswers[idx].isCorrect 
+          ? 'bg-emerald-100 border-emerald-400 text-emerald-800' 
+          : 'bg-rose-100 border-rose-400 text-rose-800';
+      }
+      return 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100';
+    }
+
+    // Load Active Question
+    function loadQuestion(index) {
+      currentIndex = index;
+      const q = questions[currentIndex];
+
+      // Update Tags
+      qModuleTag.innerText = `Module ${q.m}: ${getModuleName(q.m)}`;
+      qNumberTag.innerText = `Question ${currentIndex + 1} of ${questions.length}`;
+
+      // Update Question Text
+      qText.innerText = `${currentIndex + 1}. ${q.q}`;
+
+      // Render Options
+      optionsContainer.innerHTML = '';
+      q.a.forEach((optText, optIdx) => {
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left p-3.5 rounded-lg border text-sm font-medium transition flex items-center justify-between ${getOptionClass(optIdx)}`;
+        btn.innerHTML = `<span>${String.fromCharCode(65 + optIdx)}. ${optText}</span>`;
+        btn.onclick = () => selectOption(optIdx);
+        if (userAnswers[currentIndex] !== null) btn.disabled = true;
+        optionsContainer.appendChild(btn);
+      });
+
+      // Render Feedback
+      if (userAnswers[currentIndex] !== null) {
+        const uAns = userAnswers[currentIndex];
+        feedbackBox.classList.remove('hidden');
+        if (uAns.isCorrect) {
+          feedbackBox.className = "p-4 rounded-lg border text-sm leading-relaxed mb-4 bg-emerald-50 border-emerald-200 text-emerald-900";
+          feedbackBox.innerHTML = `<strong>Correct!</strong> ${q.h}`;
+        } else {
+          feedbackBox.className = "p-4 rounded-lg border text-sm leading-relaxed mb-4 bg-rose-50 border-rose-200 text-rose-900";
+          feedbackBox.innerHTML = `<strong>Incorrect.</strong> Correct Answer: <strong>${String.fromCharCode(65 + q.c)}. ${q.a[q.c]}</strong>.<br/>${q.h}`;
+        }
+      } else {
+        feedbackBox.classList.add('hidden');
+      }
+
+      // Update Grid Focus & Buttons
+      renderGrid();
+      document.getElementById('prev-btn').disabled = currentIndex === 0;
+      document.getElementById('next-btn').disabled = currentIndex === questions.length - 1;
+
+      // Re-render KaTeX if any math notation is present
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body);
+      }
+    }
+
+    function getOptionClass(optIdx) {
+      const uAns = userAnswers[currentIndex];
+      if (uAns === null) return 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300';
+      if (optIdx === questions[currentIndex].c) return 'bg-emerald-100 border-emerald-500 text-emerald-900 font-bold';
+      if (optIdx === uAns.selected) return 'bg-rose-100 border-rose-500 text-rose-900';
+      return 'bg-slate-50 border-slate-200 text-slate-400 opacity-60';
+    }
+
+    function selectOption(optIdx) {
+      if (userAnswers[currentIndex] !== null) return;
+
+      const q = questions[currentIndex];
+      const isCorrect = (optIdx === q.c);
+      userAnswers[currentIndex] = { selected: optIdx, isCorrect: isCorrect };
+
+      updateStats();
+      loadQuestion(currentIndex);
+    }
+
+    function toggleHint() {
+      const q = questions[currentIndex];
+      feedbackBox.classList.remove('hidden');
+      feedbackBox.className = "p-4 rounded-lg border text-sm leading-relaxed mb-4 bg-amber-50 border-amber-200 text-amber-900";
+      feedbackBox.innerHTML = `<strong>Hint:</strong> ${q.h}`;
+    }
+
+    function navigate(direction) {
+      const target = currentIndex + direction;
+      if (target >= 0 && target < questions.length) {
+        loadQuestion(target);
+      }
+    }
+
+    function jumpToQuestion(idx) {
+      loadQuestion(idx);
+    }
+
+    function filterModule(mod) {
+      activeModuleFilter = mod;
+      
+      // Update Button Styles
+      document.querySelectorAll('.mod-filter-btn').forEach(btn => {
+        btn.className = 'mod-filter-btn w-full text-left px-3 py-2 rounded-lg font-medium hover:bg-slate-100 text-slate-700';
+      });
+      const activeBtn = document.getElementById(`mod-btn-${mod}`);
+      if (activeBtn) activeBtn.className = 'mod-filter-btn w-full text-left px-3 py-2 rounded-lg font-semibold bg-slate-900 text-white';
+
+      if (mod === 'all') {
+        questions = JSON.parse(JSON.stringify(rawQuestions));
+      } else {
+        questions = rawQuestions.filter(q => q.m === mod);
+      }
+      userAnswers = new Array(questions.length).fill(null);
+      updateStats();
+      loadQuestion(0);
+    }
+
+    function shuffleQuestions() {
+      // Fisher-Yates Shuffle algorithm
+      for (let i = questions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [questions[i], questions[j]] = [questions[j], questions[i]];
+      }
+      userAnswers = new Array(questions.length).fill(null);
+      updateStats();
+      loadQuestion(0);
+    }
+
+    function resetQuiz() {
+      if (activeModuleFilter === 'all') {
+        questions = JSON.parse(JSON.stringify(rawQuestions));
+      } else {
+        questions = rawQuestions.filter(q => q.m === activeModuleFilter);
+      }
+      userAnswers = new Array(questions.length).fill(null);
+      updateStats();
+      loadQuestion(0);
+    }
+
+    function getModuleName(m) {
+      switch(m) {
+        case 1: return "Origin & Evolution";
+        case 2: return "Community Ecology";
+        case 3: return "Climate & Biomes";
+        case 4: return "Biodiversity & Conservation";
+        default: return "";
+      }
+    }
+
+    function updateStats() {
+      const answered = userAnswers.filter(a => a !== null);
+      const score = answered.filter(a => a.isCorrect).length;
+
+      scoreDisplay.innerText = score;
+      answeredDisplay.innerText = answered.length;
+      progressText.innerText = questions.length > 0 ? `${Math.round((answered.length / questions.length) * 100)}%` : '0%';
+    }
+
+    // Run Initialization
+    window.onload = initQuiz;
+  </script>
+</body>
+</html>
